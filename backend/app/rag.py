@@ -1,42 +1,42 @@
+import os
 import chromadb
-import requests
+import ollama
 
-client = chromadb.PersistentClient(path="./chroma_db")
-
-collection = client.get_or_create_collection(
-    name="documents"
+DB_PATH = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        "../../chroma_db"
+    )
 )
 
-
 def ask_rag(question):
+
+    client = chromadb.PersistentClient(path=DB_PATH)
+
+    collection = client.get_collection("documents")
 
     results = collection.query(
         query_texts=[question],
         n_results=3
     )
 
-    context = "\n".join(results["documents"][0])
+    context = "\n\n".join(
+        results["documents"][0]
+    )
 
     prompt = f"""
-Use the context below to answer.
+Answer using ONLY the context below.
 
 Context:
 {context}
 
 Question:
 {question}
-
-Answer:
 """
 
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={
-            "model": "qwen2.5:3b",
-            "prompt": prompt,
-            "stream": False
-        }
+    response = ollama.generate(
+        model="qwen2.5:3b",
+        prompt=prompt
     )
 
-    return response.json()["response"]
-
+    return response["response"]

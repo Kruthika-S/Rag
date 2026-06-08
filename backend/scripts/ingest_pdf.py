@@ -6,10 +6,18 @@ sys.path.append(
         os.path.join(os.path.dirname(__file__), "..")
     )
 )
+
 import chromadb
 from app.document_processor import extract_text, create_chunks
 
-client = chromadb.PersistentClient(path="./chroma_db")
+DB_PATH = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        "../../chroma_db"
+    )
+)
+
+client = chromadb.PersistentClient(path=DB_PATH)
 
 collection = client.get_or_create_collection(
     name="documents"
