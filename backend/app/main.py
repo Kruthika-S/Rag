@@ -18,8 +18,6 @@ import shutil
 
 app = FastAPI()
 
-# Allow React frontend access
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -65,10 +63,11 @@ def employee_count():
 @app.post("/ask")
 def ask(question: str):
 
-    answer = ask_rag(question)
+    result = ask_rag(question)
 
     return {
-        "answer": answer
+        "answer": result["answer"],
+        "sources": result["sources"]
     }
 
 
@@ -109,10 +108,18 @@ async def upload_pdf(
             ids=[
                 f"{file.filename}_{i}"
             ],
-            documents=[chunk]
+            documents=[
+                chunk
+            ],
+            metadatas=[
+                {
+                    "source": file.filename
+                }
+            ]
         )
 
     return {
-        "message": f"{file.filename} uploaded successfully",
+        "message":
+        f"{file.filename} uploaded successfully",
         "chunks": len(chunks)
     }
